@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>Mandala Art - Real Drawing Atelier</title>
+    <title>Mandala Art - Advanced Atelier</title>
     <style>
         * { box-sizing: border-box; touch-action: manipulation; margin: 0; padding: 0; user-select: none; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #1e293b; height: 100vh; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #ffffff; color: #1e293b; height: 100vh; overflow: hidden; }
         
         .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: #ffffff; overflow-y: auto; z-index: 10; }
         .hidden { display: none !important; }
@@ -36,30 +36,54 @@
         .patterns-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 16px; }
         .pattern-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .pattern-preview { width: 100%; height: 120px; border-radius: 8px; background: #fafafa; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; overflow: hidden; }
-        .pattern-preview img, .pattern-preview svg { width: 100%; height: 100%; object-fit: contain; }
         .pattern-title { font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px; }
         
-        /* Buttons Color Specification */
         .action-btn { width: 100%; padding: 10px; border-radius: 8px; border: none; font-weight: 700; font-size: 12px; cursor: pointer; text-align: center; }
-        .btn-open { background: #10b981 !important; color: white !important; } /* الأخضر للمفتوحة */
-        .btn-locked { background: #facc15 !important; color: #713f12 !important; cursor: pointer; } /* الأصفر للمقفلة */
+        .btn-open { background: #10b981 !important; color: white !important; }
+        .btn-locked { background: #facc15 !important; color: #713f12 !important; cursor: pointer; }
 
-        /* Canvas Screen & Tools */
+        /* Canvas Workspace & Zooming Container */
         #canvas-screen { background: #ffffff; }
-        .atelier-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
-        .verify-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer; }
+        .atelier-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #ffffff; border-bottom: 1px solid #e2e8f0; z-index: 20; }
+        .verify-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
         
         #workspace { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; background: #ffffff; touch-action: none; }
-        #drawing-canvas { background: #ffffff; cursor: crosshair; }
+        
+        /* Green Scan Laser Animation */
+        #scanner-line {
+            position: absolute; left: 0; right: 0; height: 5px;
+            background: #10b981; box-shadow: 0 0 15px #10b981, 0 0 25px #10b981;
+            display: none; z-index: 50; top: 0;
+        }
+        @keyframes scanAnim {
+            0% { top: 0%; opacity: 1; }
+            50% { top: 95%; opacity: 1; }
+            100% { top: 0%; opacity: 0; }
+        }
+        .scanning { display: block !important; animation: scanAnim 1.5s ease-in-out infinite; }
 
-        .bottom-palette { background: #ffffff; border-top: 1px solid #e2e8f0; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
-        .tools-selector { display: flex; justify-content: space-around; background: #f8fafc; padding: 4px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        #canvas-wrapper { transform-origin: center center; cursor: crosshair; }
+        #drawing-canvas { background: #ffffff; display: block; }
+
+        /* Tools Palette & Size Controller */
+        .bottom-palette { background: #ffffff; border-top: 1px solid #e2e8f0; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; z-index: 20; }
+        .tools-selector { display: flex; justify-content: space-around; align-items: center; background: #f8fafc; padding: 6px; border-radius: 12px; border: 1px solid #e2e8f0; }
         .tool-tab { border: none; background: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; }
         .tool-tab.active { background: #ffffff; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
+        .size-slider-container { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: #64748b; padding: 0 4px; }
+        .size-slider-container input { flex: 1; accent-color: #0f172a; }
+
         .colors-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; }
-        .color-dot { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; cursor: pointer; border: 2px solid #ffffff; box-shadow: 0 0 0 1px #cbd5e1; }
+        .color-dot { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; cursor: pointer; border: 2px solid #ffffff; box-shadow: 0 0 0 1px #cbd5e1; }
         .color-dot.active { border-color: #0f172a; transform: scale(1.15); }
+
+        /* Modal Popup */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 100; }
+        .modal-box { background: white; padding: 24px; border-radius: 20px; text-align: center; max-width: 280px; width: 90%; }
+        .modal-title { font-weight: 800; font-size: 18px; margin-bottom: 8px; color: #0f172a; }
+        .modal-desc { font-size: 13px; color: #64748b; margin-bottom: 16px; }
+        .modal-btn { background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -116,16 +140,19 @@
         <div class="patterns-grid" id="patterns-list"></div>
     </div>
 
-    <!-- SCREEN 3: White Drawing Atelier Screen -->
+    <!-- SCREEN 3: Canvas Atelier Screen -->
     <div id="screen-atelier" class="screen hidden">
         <div class="atelier-header">
             <button class="back-btn" onclick="app.showScreen('screen-patterns')">← Leave</button>
-            <button class="verify-btn" onclick="app.verifyComplete()">✓ VERIFY & COMPLETE</button>
+            <button class="verify-btn" onclick="app.triggerScanner()">✓ VÉRIFIER & COMPLETE</button>
             <div class="hearts-bar" id="hearts-atelier">❤️❤️❤️</div>
         </div>
 
         <div id="workspace">
-            <canvas id="drawing-canvas" width="600" height="600"></canvas>
+            <div id="scanner-line"></div>
+            <div id="canvas-wrapper">
+                <canvas id="drawing-canvas" width="600" height="600"></canvas>
+            </div>
         </div>
 
         <div class="bottom-palette">
@@ -134,7 +161,23 @@
                 <button class="tool-tab" id="tool-brush" onclick="app.setTool('brush')">🖌️ Brush</button>
                 <button class="tool-tab" id="tool-eraser" onclick="app.setTool('eraser')">🧹 Eraser</button>
             </div>
+
+            <div class="size-slider-container">
+                <span>Size</span>
+                <input type="range" id="brush-size" min="2" max="30" value="6" oninput="app.brushSize = this.value">
+            </div>
+
             <div class="colors-scroll" id="colors-list"></div>
+        </div>
+    </div>
+
+    <!-- Custom Modal for Heart Revival -->
+    <div id="hearts-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div style="font-size:36px; margin-bottom:8px;">💔</div>
+            <div class="modal-title">Out of Hearts!</div>
+            <div class="modal-desc">Pay 300 Points to restore 3 full hearts and continue drawing?</div>
+            <button class="modal-btn" onclick="app.reviveHearts()">Restore Hearts (⭐ 300)</button>
         </div>
     </div>
 
@@ -144,6 +187,42 @@
             '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', 
             '#ec4899', '#f43f5e', '#78350f', '#0f172a', '#ffffff'
         ];
+
+        class SoundEffects {
+            constructor() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            playScan() {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 1.2);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 1.2);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 1.2);
+            }
+            playSuccess() {
+                const osc = this.ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(659.25, this.ctx.currentTime + 0.15);
+                osc.frequency.setValueAtTime(783.99, this.ctx.currentTime + 0.3);
+                const gain = this.ctx.createGain(); gain.gain.value = 0.2;
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.5);
+            }
+            playBreak() {
+                const osc = this.ctx.createOscillator();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 0.4);
+                const gain = this.ctx.createGain(); gain.gain.value = 0.2;
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.4);
+            }
+        }
 
         class MandalaApp {
             constructor() {
@@ -160,11 +239,20 @@
 
                 this.activeColor = COLOR_PALETTES[0];
                 this.currentTool = 'fill';
+                this.brushSize = 6;
                 this.canvas = document.getElementById('drawing-canvas');
                 this.ctx = this.canvas.getContext('2d');
+                this.sfx = new SoundEffects();
+
+                // Zooming & Panning
+                this.scale = 1;
+                this.panX = 0;
+                this.panY = 0;
+                this.wrapper = document.getElementById('canvas-wrapper');
 
                 this.initColors();
                 this.initCanvasEvents();
+                this.initZoomEvents();
             }
 
             initColors() {
@@ -223,14 +311,9 @@
                     const card = document.createElement('div');
                     card.className = 'pattern-card';
                     
-                    let btnHTML = '';
-                    if (isUnlocked) {
-                        // أزرار الصور المفتوحة بالأخضر
-                        btnHTML = `<button class="action-btn btn-open" onclick="app.startColoring(${i})">Color Now</button>`;
-                    } else {
-                        // أزرار الصور المقفلة بالأصفر
-                        btnHTML = `<button class="action-btn btn-locked" onclick="app.unlockPattern(${i}, ${cost})">Unlock ⭐ ${cost}</button>`;
-                    }
+                    let btnHTML = isUnlocked 
+                        ? `<button class="action-btn btn-open" onclick="app.startColoring(${i})">Color Now</button>`
+                        : `<button class="action-btn btn-locked" onclick="app.unlockPattern(${i}, ${cost})">Unlock ⭐ ${cost}</button>`;
 
                     card.innerHTML = `
                         <div class="pattern-preview">
@@ -252,16 +335,14 @@
                     this.unlocked[this.currentBook][patternIdx] = true;
                     this.openBook(this.currentBook);
                 } else {
-                    alert("Not enough points! Complete drawings to earn stars ⭐");
+                    alert("Not enough points! ⭐");
                 }
             }
 
             drawPatternOnCanvas(canvasObj, book, level) {
                 const ctx = canvasObj.getContext('2d');
-                const w = canvasObj.width;
-                const h = canvasObj.height;
-                const cx = w / 2;
-                const cy = h / 2;
+                const w = canvasObj.width, h = canvasObj.height;
+                const cx = w / 2, cy = h / 2;
 
                 ctx.clearRect(0, 0, w, h);
                 ctx.fillStyle = '#ffffff';
@@ -296,16 +377,54 @@
                 ctx.beginPath();
                 ctx.arc(0, 0, radius / 4, 0, Math.PI * 2);
                 ctx.stroke();
-
                 ctx.restore();
             }
 
             startColoring(patternIdx) {
                 this.currentPattern = patternIdx;
+                this.resetZoom();
                 this.drawPatternOnCanvas(this.canvas, this.currentBook, patternIdx);
                 this.showScreen('screen-atelier');
             }
 
+            /* Pinch to Zoom Logic */
+            initZoomEvents() {
+                const workspace = document.getElementById('workspace');
+                let initialDist = 0;
+
+                workspace.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 2) {
+                        initialDist = Math.hypot(
+                            e.touches[0].clientX - e.touches[1].clientX,
+                            e.touches[0].clientY - e.touches[1].clientY
+                        );
+                    }
+                });
+
+                workspace.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 2) {
+                        const dist = Math.hypot(
+                            e.touches[0].clientX - e.touches[1].clientX,
+                            e.touches[0].clientY - e.touches[1].clientY
+                        );
+                        const factor = dist / initialDist;
+                        this.scale = Math.min(Math.max(1, this.scale * factor), 4);
+                        initialDist = dist;
+                        this.updateTransform();
+                    }
+                });
+            }
+
+            resetZoom() {
+                this.scale = 1; this.panX = 0; this.panY = 0;
+                this.updateTransform();
+            }
+
+            updateTransform() {
+                this.wrapper.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.scale})`;
+            }
+
+            /* Canvas Events */
             initCanvasEvents() {
                 let isDrawing = false;
 
@@ -322,6 +441,7 @@
                 };
 
                 const handleStart = (e) => {
+                    if (e.touches && e.touches.length > 1) return;
                     const pos = getPos(e);
                     if (this.currentTool === 'fill') {
                         this.floodFill(pos.x, pos.y, this.hexToRgb(this.activeColor));
@@ -336,7 +456,7 @@
                     if (!isDrawing || this.currentTool === 'fill') return;
                     const pos = getPos(e);
                     this.ctx.strokeStyle = this.currentTool === 'eraser' ? '#ffffff' : this.activeColor;
-                    this.ctx.lineWidth = this.currentTool === 'eraser' ? 15 : 4;
+                    this.ctx.lineWidth = this.brushSize;
                     this.ctx.lineCap = 'round';
                     this.ctx.lineTo(pos.x, pos.y);
                     this.ctx.stroke();
@@ -361,13 +481,11 @@
                 if (this.colorsMatch(targetColor, fillColor)) return;
 
                 const pixelsToCheck = [startX, startY];
-                const width = this.canvas.width;
-                const height = this.canvas.height;
+                const width = this.canvas.width, height = this.canvas.height;
 
                 while (pixelsToCheck.length > 0) {
                     const y = pixelsToCheck.pop();
                     const x = pixelsToCheck.pop();
-
                     const currentColor = this.getPixelColor(data, x, y);
 
                     if (this.colorsMatch(currentColor, targetColor) && !this.isBorder(currentColor)) {
@@ -389,36 +507,78 @@
 
             setPixelColor(data, x, y, color) {
                 const idx = (y * this.canvas.width + x) * 4;
-                data[idx] = color.r;
-                data[idx + 1] = color.g;
-                data[idx + 2] = color.b;
-                data[idx + 3] = 255;
+                data[idx] = color.r; data[idx + 1] = color.g; data[idx + 2] = color.b; data[idx + 3] = 255;
             }
 
             colorsMatch(a, b) {
                 return Math.abs(a[0] - b.r) < 10 && Math.abs(a[1] - b.g) < 10 && Math.abs(a[2] - b.b) < 10;
             }
 
-            isBorder(color) {
-                return color[0] < 50 && color[1] < 50 && color[2] < 50;
-            }
+            isBorder(color) { return color[0] < 50 && color[1] < 50 && color[2] < 50; }
 
             hexToRgb(hex) {
                 const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return result ? {
-                    r: parseInt(result[1], 16),
-                    g: parseInt(result[2], 16),
-                    b: parseInt(result[3], 16)
-                } : { r: 0, g: 0, b: 0 };
+                return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 };
+            }
+
+            /* Scanner and Verification Logic */
+            triggerScanner() {
+                const scanner = document.getElementById('scanner-line');
+                scanner.classList.add('scanning');
+                this.sfx.playScan();
+
+                setTimeout(() => {
+                    scanner.classList.remove('scanning');
+                    this.verifyComplete();
+                }, 1500);
             }
 
             verifyComplete() {
-                this.score += 200;
-                alert("Drawing Completed! +200 PTS ⭐");
-                if (this.currentPattern < 19) {
-                    this.unlocked[this.currentBook][this.currentPattern + 1] = true;
+                const imgData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                const data = imgData.data;
+                let coloredPixels = 0, totalPixels = data.length / 4;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    if (!(data[i] > 240 && data[i+1] > 240 && data[i+2] > 240) && !(data[i] < 50 && data[i+1] < 50 && data[i+2] < 50)) {
+                        coloredPixels++;
+                    }
                 }
-                this.openBook(this.currentBook);
+
+                const ratio = coloredPixels / totalPixels;
+
+                if (ratio >= 0.15) { // 15% Real Colored Area Required
+                    this.score += 300;
+                    this.sfx.playSuccess();
+                    alert("Awesome Precision! Pattern Completed! +300 PTS ⭐");
+                    if (this.currentPattern < 19) {
+                        this.unlocked[this.currentBook][this.currentPattern + 1] = true;
+                    }
+                    this.openBook(this.currentBook);
+                } else {
+                    this.hearts--;
+                    this.sfx.playBreak();
+                    if (this.hearts <= 0) {
+                        document.getElementById('hearts-modal').classList.remove('hidden');
+                    } else {
+                        alert("Not enough colored areas! Lost a heart 💔");
+                        this.updateUI();
+                    }
+                }
+            }
+
+            reviveHearts() {
+                if (this.score >= 300) {
+                    this.score -= 300;
+                    this.hearts = 3;
+                    document.getElementById('hearts-modal').classList.add('hidden');
+                    this.updateUI();
+                    this.sfx.playSuccess();
+                } else {
+                    alert("Not enough points! Restarting level...");
+                    this.hearts = 3;
+                    document.getElementById('hearts-modal').classList.add('hidden');
+                    this.showScreen('screen-bookshelf');
+                }
             }
         }
 
