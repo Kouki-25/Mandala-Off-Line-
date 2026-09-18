@@ -3,86 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Mandala Art Coloring Book</title>
+    <title>Mandala Art Pro</title>
     <style>
-        * { box-sizing: border-box; touch-action: manipulation; margin: 0; padding: 0; user-select: none; }
+        * { box-sizing: border-box; touch-action: none; margin: 0; padding: 0; user-select: none; }
         body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #f8fafc; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* Main Menu Style */
+        #main-menu { position: absolute; inset: 0; background: #0f172a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; gap: 20px; }
+        .menu-title { font-size: 32px; font-weight: bold; color: #3b82f6; text-shadow: 0 0 10px rgba(59,130,246,0.5); text-align: center; }
+        .menu-btn { background: #2563eb; color: white; border: none; padding: 14px 32px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.4); }
+        .menu-btn:active { transform: scale(0.95); }
+
+        /* App Layout */
         header { background: #1e293b; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
         .stats { display: flex; gap: 12px; align-items: center; font-weight: bold; font-size: 14px; }
         .stat-item { background: #334155; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
         .controls { display: flex; gap: 8px; }
         button { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px; }
-        button:active { transform: scale(0.95); }
         button.secondary { background: #475569; }
+
         #app-container { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
         #canvas-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; padding: 10px; position: relative; }
-        svg { width: 100%; height: 100%; max-width: 500px; max-height: 500px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); }
-        svg path { stroke: #1e293b; stroke-width: 1.5; stroke-linejoin: round; transition: fill 0.1s ease; cursor: pointer; }
+        canvas { background: #ffffff; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 100%; max-height: 100%; }
+
         .palette-container { background: #1e293b; padding: 10px; border-top: 1px solid #334155; display: flex; flex-direction: column; gap: 8px; }
-        .palette-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
-        .tab-btn { background: #334155; color: #94a3b8; font-size: 11px; padding: 4px 10px; border-radius: 12px; white-space: nowrap; }
+        .tools-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .tool-btn { background: #334155; color: white; border: 1px solid #475569; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+        .tool-btn.active { background: #2563eb; border-color: #60a5fa; }
+
+        .slider-container { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94a3b8; }
+        .slider-container input { width: 80px; }
+
+        .palette-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+        .tab-btn { background: #334155; color: #94a3b8; font-size: 11px; padding: 4px 10px; border-radius: 12px; white-space: nowrap; border: none; }
         .tab-btn.active { background: #3b82f6; color: white; }
+
         .color-grid { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; }
-        .color-swatch { min-width: 36px; height: 36px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; flex-shrink: 0; }
+        .color-swatch { min-width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; flex-shrink: 0; }
         .color-swatch.active { border-color: #ffffff; transform: scale(1.15); }
-        .tools { display: flex; justify-content: space-between; padding: 0 8px; align-items: center; }
-        .modal { position: absolute; inset: 0; background: rgba(15,23,42,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; z-index: 50; }
+
+        .modal { position: absolute; inset: 0; background: rgba(15,23,42,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; z-index: 150; }
         .hidden { display: none !important; }
         .book-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; width: 100%; max-width: 400px; }
-        .book-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; text-align: center; }
-        .overlay-scan { position: absolute; inset: 0; border: 2px solid #22c55e; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
-        .overlay-scan.active { opacity: 1; }
+        .book-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; }
     </style>
 </head>
 <body>
+
+    <!-- Main Menu Screen -->
+    <div id="main-menu">
+        <div class="menu-title">🎨 Mandala Art Pro</div>
+        <button class="menu-btn" onclick="game.startGame()">Start Painting</button>
+        <button class="menu-btn" style="background:#475569;" onclick="game.openGallery()">Select Book</button>
+    </div>
+
     <header>
         <div class="stats">
             <div class="stat-item">❤️ <span id="hp-count">3</span></div>
             <div class="stat-item">⭐ <span id="score-count">0</span> PTS</div>
         </div>
         <div class="controls">
-            <button class="secondary" onclick="game.openGallery()">Book Select</button>
-            <button onclick="game.verifyBoundaries()">Verify Precision</button>
+            <button class="secondary" onclick="game.showMenu()">Menu</button>
+            <button onclick="game.verifyPrecision()">Verify Precision</button>
         </div>
     </header>
 
     <div id="app-container">
         <div id="canvas-wrapper">
-            <div id="scan-overlay" class="overlay-scan"></div>
-            <svg id="mandala-svg" viewBox="0 0 400 400"></svg>
+            <canvas id="mandala-canvas" width="400" height="400"></canvas>
         </div>
 
         <div class="palette-container">
-            <div class="tools">
-                <div style="display:flex; gap:6px;">
-                    <button class="secondary" onclick="game.undo()">↩️ Undo</button>
-                    <button class="secondary" onclick="game.redo()">↪️ Redo</button>
-                    <button class="secondary" id="eraser-btn" onclick="game.toggleEraser()">🧹 Eraser</button>
+            <div class="tools-row">
+                <div style="display:flex; gap:4px;">
+                    <button class="tool-btn active" id="tool-brush" onclick="game.setTool('brush')">🖌️ Brush</button>
+                    <button class="tool-btn" id="tool-pencil" onclick="game.setTool('pencil')">✏️ Pencil</button>
+                    <button class="tool-btn" id="tool-eraser" onclick="game.setTool('eraser')">🧹 Eraser</button>
+                </div>
+                <div class="slider-container">
+                    <span>Size:</span>
+                    <input type="range" id="brush-size" min="2" max="25" value="6" oninput="game.updateBrushSize(this.value)">
+                </div>
+            </div>
+
+            <div class="tools-row">
+                <div style="display:flex; gap:4px;">
+                    <button class="tool-btn" onclick="game.undo()">↩️ Undo</button>
+
+                    <button class="tool-btn" onclick="game.redo()">↪️ Redo</button>
                 </div>
                 <span id="level-indicator" style="font-size:12px; color:#94a3b8; font-weight:bold;">Book 1 - Lvl 1</span>
             </div>
+
             <div class="palette-tabs" id="palette-tabs"></div>
             <div class="color-grid" id="color-grid"></div>
         </div>
     </div>
 
+    <!-- Book Selection Modal -->
     <div id="gallery-modal" class="modal hidden">
-        <h2>Select Tier Book</h2>
+        <h2 style="margin-bottom:10px;">Select Mandala Tier</h2>
         <div class="book-grid">
             <div class="book-card" onclick="game.selectBook(0)">
-                <h3>Beginner</h3>
-                <p>20 Levels</p>
+                <h3>Easy</h3>
+                <p>Floral</p>
             </div>
             <div class="book-card" onclick="game.selectBook(1)">
-                <h3>Intermediate</h3>
-                <p>20 Levels</p>
+                <h3>Medium</h3>
+                <p>Geometric</p>
             </div>
             <div class="book-card" onclick="game.selectBook(2)">
                 <h3>Pro Tier</h3>
-                <p>20 Levels</p>
+                <p>Complex</p>
             </div>
         </div>
-        <button style="margin-top:20px;" onclick="game.closeGallery()">Resume</button>
+        <button style="margin-top:20px;" onclick="game.closeGallery()">Close</button>
     </div>
 
     <script>
@@ -90,24 +125,28 @@
             Vivid: ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'],
             Light: ['#fca5a5', '#fdba74', '#fde047', '#6ee7b7', '#67e8f9', '#93c5fd', '#c4b5fd', '#f472b6'],
             Dark: ['#991b1b', '#9a3412', '#854d0e', '#065f46', '#155e75', '#1e40af', '#5b21b6', '#831843'],
-            Metallic: ['#d4af37', '#c0c0c0', '#b87333', '#e5e4e2', '#a8a9ad', '#d1a054', '#8c7853', '#4682b4'],
             Neon: ['#ff007f', '#00f3ff', '#00ff66', '#ff00ff', '#ffff00', '#ff3300', '#9900ff', '#00ffff']
         };
 
         class MandalaGame {
             constructor() {
+                this.canvas = document.getElementById('mandala-canvas');
+                this.ctx = this.canvas.getContext('2d');
                 this.currentBook = 0;
                 this.currentLevel = 0;
                 this.score = 0;
                 this.hp = 3;
+                
+                this.activeTool = 'brush'; // brush, pencil, eraser
+                this.brushSize = 6;
                 this.activeColor = PALETTES.Vivid[0];
-                this.isEraser = false;
+                this.isDrawing = false;
+                
                 this.history = [];
                 this.redoStack = [];
-                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
+
                 this.initUI();
-                this.loadLevel(0, 0);
+                this.initCanvasEvents();
             }
 
             initUI() {
@@ -133,12 +172,11 @@
                 grid.innerHTML = '';
                 colors.forEach(color => {
                     const swatch = document.createElement('div');
-                    swatch.className = `color-swatch ${this.activeColor === color && !this.isEraser ? 'active' : ''}`;
+                    swatch.className = `color-swatch ${this.activeColor === color && this.activeTool !== 'eraser' ? 'active' : ''}`;
                     swatch.style.background = color;
                     swatch.onclick = () => {
                         this.activeColor = color;
-                        this.isEraser = false;
-                        document.getElementById('eraser-btn').style.background = '#475569';
+                        if(this.activeTool === 'eraser') this.setTool('brush');
                         document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
                         swatch.classList.add('active');
                     };
@@ -146,98 +184,165 @@
                 });
             }
 
-            toggleEraser() {
-                this.isEraser = !this.isEraser;
-                document.getElementById('eraser-btn').style.background = this.isEraser ? '#ef4444' : '#475569';
-                if (this.isEraser) {
-                    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+            setTool(tool) {
+                this.activeTool = tool;
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById(`tool-${tool}`).classList.add('active');
+            }
+
+            updateBrushSize(val) {
+                this.brushSize = val;
+            }
+
+            initCanvasEvents() {
+                const getPos = (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    return {
+                        x: (clientX - rect.left) * (this.canvas.width / rect.width),
+                        y: (clientY - rect.top) * (this.canvas.height / rect.height)
+                    };
+                };
+
+                const startDrawing = (e) => {
+                    this.isDrawing = true;
+                    this.saveState();
+                    const pos = getPos(e);
+                    this.draw(pos.x, pos.y, false);
+                };
+
+                const drawMove = (e) => {
+                    if (!this.isDrawing) return;
+                    const pos = getPos(e);
+                    this.draw(pos.x, pos.y, true);
+                };
+
+                const stopDrawing = () => {
+                    if (this.isDrawing) {
+                        this.isDrawing = false;
+                        this.ctx.beginPath();
+                    }
+                };
+
+                this.canvas.addEventListener('mousedown', startDrawing);
+                this.canvas.addEventListener('mousemove', drawMove);
+                this.canvas.addEventListener('mouseup', stopDrawing);
+
+                this.canvas.addEventListener('touchstart', startDrawing);
+                this.canvas.addEventListener('touchmove', drawMove);
+                this.canvas.addEventListener('touchend', stopDrawing);
+            }
+
+            draw(x, y, isMoving) {
+                this.ctx.lineWidth = this.activeTool === 'pencil' ? 2 : this.brushSize;
+                this.ctx.lineCap = 'round';
+                this.ctx.lineJoin = 'round';
+
+                if (this.activeTool === 'eraser') {
+                    this.ctx.strokeStyle = '#ffffff';
+                } else {
+                    this.ctx.strokeStyle = this.activeColor;
+                }
+
+                if (!isMoving) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, y);
+                }
+                this.ctx.lineTo(x, y);
+                this.ctx.stroke();
+            }
+
+            saveState() {
+                if (this.history.length > 10) this.history.shift();
+                this.history.push(this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height));
+                this.redoStack = [];
+            }
+
+            undo() {
+                if (this.history.length > 0) {
+                    this.redoStack.push(this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height));
+                    const state = this.history.pop();
+                    this.ctx.putImageData(state, 0, 0);
                 }
             }
 
-            playSound(freq, duration) {
-                try {
-                    const osc = this.audioCtx.createOscillator();
-                    const gain = this.audioCtx.createGain();
-                    osc.connect(gain);
-                    gain.connect(this.audioCtx.destination);
-                    osc.frequency.value = freq;
-                    osc.start();
-                    gain.gain.exponentialRampToValueAtTime(0.00001, this.audioCtx.currentTime + duration);
-                    osc.stop(this.audioCtx.currentTime + duration);
-                } catch(e) {}
+            redo() {
+                if (this.redoStack.length > 0) {
+                    this.history.push(this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height));
+                    const state = this.redoStack.pop();
+                    this.ctx.putImageData(state, 0, 0);
+                }
             }
 
-            generateMandalaSVG(level) {
-                const svg = document.getElementById('mandala-svg');
-                svg.innerHTML = '';
+            drawMandalaOutline(level) {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = "#ffffff";
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
                 const center = 200;
-                const petality = 8 + (level % 6) * 2;
+                const petality = 6 + (this.currentBook * 4) + (level % 4) * 2;
                 
-                for (let ring = 5; ring > 0; ring--) {
-                    const radius = ring * 35;
-                    for (let i = 0; i < petality; i++) {
-                        const angle = (i * 360 / petality) * Math.PI / 180;
-                        const nextAngle = ((i + 1) * 360 / petality) * Math.PI / 180;
-                        const cx = center + Math.cos(angle) * radius;
-                        const cy = center + Math.sin(angle) * radius;
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineWidth = 2;
+
+                // Dynamic geometry generation per level
+                for (let r = 180; r > 20; r -= (30 - this.currentBook * 5)) {
+                    this.ctx.beginPath();
+                    for (let i = 0; i <= petality; i++) {
+                        const angle = (i * 2 * Math.PI) / petality;
+                        const x = center + r * Math.cos(angle);
+                        const y = center + r * Math.sin(angle);
                         
-                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                        const d = `M ${center} ${center} Q ${cx} ${cy} ${center + Math.cos(nextAngle) * radius} ${center + Math.sin(nextAngle) * radius} Z`;
-                        path.setAttribute('d', d);
-                        path.setAttribute('fill', '#ffffff');
-                        path.onclick = (e) => this.colorRegion(e.target);
-                        svg.appendChild(path);
+                        if (level % 2 === 0) {
+                            this.ctx.arc(x, y, r / 3, 0, Math.PI * 2);
+                        } else {
+                            if (i === 0) this.ctx.moveTo(x, y);
+                            else this.ctx.lineTo(x, y);
+                        }
+                    }
+                    this.ctx.stroke();
+                }
+
+                this.saveState();
+            }
+
+            verifyPrecision() {
+                const imgData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
+                let coloredPixels = 0;
+                
+                for (let i = 0; i < imgData.length; i += 4) {
+                    const r = imgData[i], g = imgData[i+1], b = imgData[i+2];
+                    if (!(r === 255 && g === 255 && b === 255) && !(r === 0 && g === 0 && b === 0)) {
+                        coloredPixels++;
+                    }
+                }
+
+                if (coloredPixels > 5000) {
+                    this.score += 150;
+                    document.getElementById('score-count').innerText = this.score;
+                    alert("Precision Accuracy: Excellent! +150 PTS ⭐");
+                    this.nextLevel();
+                } else {
+                    this.hp--;
+                    document.getElementById('hp-count').innerText = this.hp;
+                    alert("Low Precision! Heart lost ❤️");
+                    if (this.hp <= 0) {
+                        alert("Game Over! Restarting Book...");
+                        this.hp = 3;
+                        document.getElementById('hp-count').innerText = this.hp;
+                        this.loadLevel(this.currentBook, 0);
                     }
                 }
             }
 
-            colorRegion(target) {
-                const prevColor = target.getAttribute('fill');
-                const nextColor = this.isEraser ? '#ffffff' : this.activeColor;
-                if (prevColor === nextColor) return;
-
-                this.history.push({ target, prevColor });
-                this.redoStack = [];
-                target.setAttribute('fill', nextColor);
-                this.playSound(440, 0.1);
-                this.checkCompletion();
+            startGame() {
+                document.getElementById('main-menu').classList.add('hidden');
+                this.loadLevel(0, 0);
             }
 
-            undo() {
-                if (this.history.length === 0) return;
-                const last = this.history.pop();
-                this.redoStack.push({ target: last.target, prevColor: last.target.getAttribute('fill') });
-                last.target.setAttribute('fill', last.prevColor);
-                this.playSound(300, 0.08);
-            }
-
-            redo() {
-                if (this.redoStack.length === 0) return;
-                const next = this.redoStack.pop();
-                this.history.push({ target: next.target, prevColor: next.target.getAttribute('fill') });
-                next.target.setAttribute('fill', next.prevColor);
-                this.playSound(500, 0.08);
-            }
-
-            checkCompletion() {
-                const paths = Array.from(document.querySelectorAll('#mandala-svg path'));
-                const uncolored = paths.filter(p => p.getAttribute('fill') === '#ffffff');
-                if (uncolored.length === 0 && paths.length > 0) {
-                    this.score += 100;
-                    document.getElementById('score-count').innerText = this.score;
-                    this.playSound(880, 0.3);
-                    setTimeout(() => {
-                        alert('Level Completed!');
-                        this.nextLevel();
-                    }, 200);
-                }
-            }
-
-            verifyBoundaries() {
-                const overlay = document.getElementById('scan-overlay');
-                overlay.classList.add('active');
-                this.playSound(600, 0.15);
-                setTimeout(() => overlay.classList.remove('active'), 800);
+            showMenu() {
+                document.getElementById('main-menu').classList.remove('hidden');
             }
 
             loadLevel(bookIndex, levelIndex) {
@@ -246,7 +351,7 @@
                 this.history = [];
                 this.redoStack = [];
                 document.getElementById('level-indicator').innerText = `Book ${bookIndex + 1} - Lvl ${levelIndex + 1}`;
-                this.generateMandalaSVG(levelIndex);
+                this.drawMandalaOutline(levelIndex);
             }
 
             nextLevel() {
@@ -255,7 +360,7 @@
                 } else if (this.currentBook < 2) {
                     this.loadLevel(this.currentBook + 1, 0);
                 } else {
-                    alert('Congratulations! You completed all books!');
+                    alert('Victory! All Books Completed!');
                 }
             }
 
@@ -264,6 +369,7 @@
             selectBook(index) {
                 this.loadLevel(index, 0);
                 this.closeGallery();
+                document.getElementById('main-menu').classList.add('hidden');
             }
         }
 
@@ -271,4 +377,3 @@
     </script>
 </body>
 </html>
-
