@@ -2,67 +2,64 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
-    <title>Mandala Art - Adult Coloring Atelier</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Mandala Art - Real Drawing Atelier</title>
     <style>
         * { box-sizing: border-box; touch-action: manipulation; margin: 0; padding: 0; user-select: none; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #1e293b; height: 100vh; overflow: hidden; }
         
-        .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: #f8fafc; overflow-y: auto; z-index: 10; }
+        .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: #ffffff; overflow-y: auto; z-index: 10; }
         .hidden { display: none !important; }
 
-        /* Top Header */
+        /* Header UI */
         header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
         .hearts-bar { display: flex; gap: 4px; font-size: 18px; }
         .score-badge { background: #fef9c3; color: #854d0e; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 14px; border: 1px solid #fef08a; display: flex; align-items: center; gap: 6px; }
 
-        /* Main Menu / Bookshelf */
-        .app-title { text-align: center; margin: 15px 0 5px 0; font-size: 22px; font-weight: 800; letter-spacing: 1px; color: #0f172a; }
+        /* Bookshelf Cards */
+        .app-title { text-align: center; margin: 15px 0 5px 0; font-size: 22px; font-weight: 800; color: #0f172a; }
         .app-subtitle { text-align: center; color: #64748b; font-size: 12px; margin-bottom: 15px; }
         .books-container { padding: 0 16px 20px 16px; display: flex; flex-direction: column; gap: 16px; }
-        
         .book-card { border-radius: 16px; padding: 20px; color: white; position: relative; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
-        .book-card.beginner { background: linear-gradient(135deg, #064e3b 0%, #047857 100%); }
-        .book-card.intermediate { background: linear-gradient(135deg, #78350f 0%, #b45309 100%); }
-        .book-card.pro { background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%); }
+        .book-card.beginner { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+        .book-card.intermediate { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); }
+        .book-card.pro { background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); }
         
         .book-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-bottom: 12px; }
         .book-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-        .book-desc { font-size: 12px; opacity: 0.8; }
+        .book-desc { font-size: 12px; opacity: 0.9; }
         .book-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; font-size: 12px; font-weight: 600; }
 
-        /* Patterns Grid Screen */
+        /* Patterns Grid */
         .nav-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
         .back-btn { background: none; border: none; font-size: 14px; font-weight: 600; color: #475569; cursor: pointer; }
-        
         .patterns-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 16px; }
         .pattern-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .pattern-preview { width: 100%; height: 110px; border-radius: 8px; background: #fafafa; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; }
+        .pattern-preview { width: 100%; height: 120px; border-radius: 8px; background: #fafafa; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; overflow: hidden; }
+        .pattern-preview img, .pattern-preview svg { width: 100%; height: 100%; object-fit: contain; }
         .pattern-title { font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px; }
         
-        .action-btn { width: 100%; padding: 8px; border-radius: 8px; border: none; font-weight: 700; font-size: 12px; cursor: pointer; }
-        .btn-play { background: #0f172a; color: white; }
-        .btn-unlock { background: #fef08a; color: #854d0e; }
-        .btn-locked { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+        /* Buttons Color Specification */
+        .action-btn { width: 100%; padding: 10px; border-radius: 8px; border: none; font-weight: 700; font-size: 12px; cursor: pointer; text-align: center; }
+        .btn-open { background: #10b981 !important; color: white !important; } /* الأخضر للمفتوحة */
+        .btn-locked { background: #facc15 !important; color: #713f12 !important; cursor: pointer; } /* الأصفر للمقفلة */
 
-        /* Canvas Atelier Screen */
+        /* Canvas Screen & Tools */
         #canvas-screen { background: #ffffff; }
-        .atelier-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #ffffff; }
-        .verify-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.2); }
+        .atelier-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+        .verify-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer; }
         
-        #workspace { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; background: #ffffff; }
-        svg { width: 90%; height: 90%; max-width: 450px; max-height: 450px; touch-action: pinch-zoom; }
-        svg path, svg circle, svg polygon { stroke: #000000; stroke-width: 1.5; stroke-linejoin: round; transition: fill 0.1s ease; cursor: pointer; fill: #ffffff; }
+        #workspace { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; background: #ffffff; touch-action: none; }
+        #drawing-canvas { background: #ffffff; cursor: crosshair; }
 
-        /* Tools Palette Bottom */
-        .bottom-palette { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
-        .tools-selector { display: flex; justify-content: space-around; background: #ffffff; padding: 4px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .tool-tab { border: none; background: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-        .tool-tab.active { background: #f1f5f9; color: #0f172a; }
+        .bottom-palette { background: #ffffff; border-top: 1px solid #e2e8f0; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+        .tools-selector { display: flex; justify-content: space-around; background: #f8fafc; padding: 4px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .tool-tab { border: none; background: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; }
+        .tool-tab.active { background: #ffffff; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
         .colors-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; }
-        .color-dot { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; cursor: pointer; border: 2px solid transparent; }
-        .color-dot.active { border-color: #0f172a; transform: scale(1.1); }
+        .color-dot { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; cursor: pointer; border: 2px solid #ffffff; box-shadow: 0 0 0 1px #cbd5e1; }
+        .color-dot.active { border-color: #0f172a; transform: scale(1.15); }
     </style>
 </head>
 <body>
@@ -80,7 +77,7 @@
             <div class="book-card beginner" onclick="app.openBook(0)">
                 <span class="book-badge">Beginner</span>
                 <div class="book-title">Shapes & Animals</div>
-                <div class="book-desc">Thick borders & clean spaces</div>
+                <div class="book-desc">Clean vector geometries</div>
                 <div class="book-footer">
                     <span id="prog-0">1/20 Unlocked</span>
                     <span>Open Book →</span>
@@ -90,7 +87,7 @@
             <div class="book-card intermediate" onclick="app.openBook(1)">
                 <span class="book-badge">Intermediate</span>
                 <div class="book-title">Floral Geometrics</div>
-                <div class="book-desc">Medium complexity layers</div>
+                <div class="book-desc">Rich layer mandalas</div>
                 <div class="book-footer">
                     <span id="prog-1">0/20 Unlocked</span>
                     <span>Open Book →</span>
@@ -100,7 +97,7 @@
             <div class="book-card pro" onclick="app.openBook(2)">
                 <span class="book-badge">Pro Book</span>
                 <div class="book-title">Pro Mandalas</div>
-                <div class="book-desc">Intricate detailed mandalas</div>
+                <div class="book-desc">Complex Pinterest style mandalas</div>
                 <div class="book-footer">
                     <span id="prog-2">0/20 Unlocked</span>
                     <span>Open Book →</span>
@@ -128,14 +125,13 @@
         </div>
 
         <div id="workspace">
-            <svg id="svg-canvas" viewBox="0 0 400 400"></svg>
+            <canvas id="drawing-canvas" width="600" height="600"></canvas>
         </div>
 
         <div class="bottom-palette">
             <div class="tools-selector">
-                <button class="tool-tab active" id="tool-brush" onclick="app.setTool('brush')">🖌️ Brush</button>
-                <button class="tool-tab" id="tool-marker" onclick="app.setTool('marker')">🖊️ Marker</button>
-                <button class="tool-tab" id="tool-pencil" onclick="app.setTool('pencil')">✏️ Pencil</button>
+                <button class="tool-tab active" id="tool-fill" onclick="app.setTool('fill')">🎨 Bucket</button>
+                <button class="tool-tab" id="tool-brush" onclick="app.setTool('brush')">🖌️ Brush</button>
                 <button class="tool-tab" id="tool-eraser" onclick="app.setTool('eraser')">🧹 Eraser</button>
             </div>
             <div class="colors-scroll" id="colors-list"></div>
@@ -143,7 +139,11 @@
     </div>
 
     <script>
-        const PALETTES = ['#000000', '#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'];
+        const COLOR_PALETTES = [
+            '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', 
+            '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', 
+            '#ec4899', '#f43f5e', '#78350f', '#0f172a', '#ffffff'
+        ];
 
         class MandalaApp {
             constructor() {
@@ -151,31 +151,31 @@
                 this.hearts = 3;
                 this.currentBook = 0;
                 this.currentPattern = 0;
-                
-                // Unlock status per book (20 patterns each)
                 this.unlocked = [
                     Array(20).fill(false),
                     Array(20).fill(false),
                     Array(20).fill(false)
                 ];
-                this.unlocked[0][0] = true; // First pattern unlocked by default
+                this.unlocked[0][0] = true;
 
-                this.activeColor = PALETTES[1];
-                this.isEraser = false;
+                this.activeColor = COLOR_PALETTES[0];
+                this.currentTool = 'fill';
+                this.canvas = document.getElementById('drawing-canvas');
+                this.ctx = this.canvas.getContext('2d');
 
                 this.initColors();
+                this.initCanvasEvents();
             }
 
             initColors() {
                 const list = document.getElementById('colors-list');
                 list.innerHTML = '';
-                PALETTES.forEach((color, idx) => {
+                COLOR_PALETTES.forEach((color, idx) => {
                     const dot = document.createElement('div');
-                    dot.className = `color-dot ${idx === 1 ? 'active' : ''}`;
+                    dot.className = `color-dot ${idx === 0 ? 'active' : ''}`;
                     dot.style.background = color;
                     dot.onclick = () => {
                         this.activeColor = color;
-                        this.isEraser = false;
                         document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
                         dot.classList.add('active');
                     };
@@ -184,10 +184,9 @@
             }
 
             setTool(tool) {
+                this.currentTool = tool;
                 document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
                 document.getElementById(`tool-${tool}`).classList.add('active');
-                if (tool === 'eraser') this.isEraser = true;
-                else this.isEraser = false;
             }
 
             showScreen(id) {
@@ -203,7 +202,6 @@
                 document.getElementById('score-menu').innerText = this.score;
                 document.getElementById('score-grid').innerText = this.score;
 
-                // Update progress counts
                 for (let b = 0; b < 3; b++) {
                     const count = this.unlocked[b].filter(x => x).length;
                     document.getElementById(`prog-${b}`).innerText = `${count}/20 Unlocked`;
@@ -212,7 +210,7 @@
 
             openBook(bookIdx) {
                 this.currentBook = bookIdx;
-                const bookNames = ['Beginner Patterns', 'Intermediate Patterns', 'Pro Book Patterns'];
+                const bookNames = ['Beginner Shapes', 'Intermediate Florals', 'Pro Mandalas'];
                 document.getElementById('book-grid-title').innerText = bookNames[bookIdx];
                 
                 const grid = document.getElementById('patterns-list');
@@ -220,28 +218,29 @@
 
                 for (let i = 0; i < 20; i++) {
                     const isUnlocked = this.unlocked[bookIdx][i];
-                    const pointsNeeded = (i + 1) * 300;
+                    const cost = (i + 1) * 200;
 
                     const card = document.createElement('div');
                     card.className = 'pattern-card';
                     
                     let btnHTML = '';
                     if (isUnlocked) {
-                        btnHTML = `<button class="action-btn btn-play" onclick="app.startColoring(${i})">Color Now</button>`;
-                    } else if (this.score >= pointsNeeded && (i === 0 || this.unlocked[bookIdx][i-1])) {
-                        btnHTML = `<button class="action-btn btn-unlock" onclick="app.unlockPattern(${i}, ${pointsNeeded})">Unlock ⭐ ${pointsNeeded}</button>`;
+                        // أزرار الصور المفتوحة بالأخضر
+                        btnHTML = `<button class="action-btn btn-open" onclick="app.startColoring(${i})">Color Now</button>`;
                     } else {
-                        btnHTML = `<button class="action-btn btn-locked">Locked</button>`;
+                        // أزرار الصور المقفلة بالأصفر
+                        btnHTML = `<button class="action-btn btn-locked" onclick="app.unlockPattern(${i}, ${cost})">Unlock ⭐ ${cost}</button>`;
                     }
 
                     card.innerHTML = `
                         <div class="pattern-preview">
-                            <svg viewBox="0 0 100 100" width="80" height="80">${this.generateSVGPaths(bookIdx, i, true)}</svg>
+                            <canvas id="prev-${bookIdx}-${i}" width="120" height="120"></canvas>
                         </div>
                         <div class="pattern-title">Pattern #${i + 1}</div>
                         ${btnHTML}
                     `;
                     grid.appendChild(card);
+                    this.drawPatternOnCanvas(document.getElementById(`prev-${bookIdx}-${i}`), bookIdx, i);
                 }
 
                 this.showScreen('screen-patterns');
@@ -252,72 +251,174 @@
                     this.score -= cost;
                     this.unlocked[this.currentBook][patternIdx] = true;
                     this.openBook(this.currentBook);
+                } else {
+                    alert("Not enough points! Complete drawings to earn stars ⭐");
                 }
+            }
+
+            drawPatternOnCanvas(canvasObj, book, level) {
+                const ctx = canvasObj.getContext('2d');
+                const w = canvasObj.width;
+                const h = canvasObj.height;
+                const cx = w / 2;
+                const cy = h / 2;
+
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, w, h);
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+
+                const petals = 6 + (book * 2) + (level % 4) * 2;
+                const radius = w * 0.38;
+
+                ctx.save();
+                ctx.translate(cx, cy);
+
+                for (let i = 0; i < petals; i++) {
+                    ctx.rotate((2 * Math.PI) / petals);
+                    ctx.beginPath();
+                    if (book === 0) {
+                        ctx.arc(0, radius / 2, radius / 3, 0, Math.PI * 2);
+                    } else if (book === 1) {
+                        ctx.moveTo(0, 0);
+                        ctx.quadraticCurveTo(radius / 2, radius / 2, 0, radius);
+                        ctx.quadraticCurveTo(-radius / 2, radius / 2, 0, 0);
+                    } else {
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(radius / 2, radius);
+                        ctx.lineTo(-radius / 2, radius);
+                        ctx.closePath();
+                    }
+                    ctx.stroke();
+                }
+
+                ctx.beginPath();
+                ctx.arc(0, 0, radius / 4, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.restore();
             }
 
             startColoring(patternIdx) {
                 this.currentPattern = patternIdx;
-                const svg = document.getElementById('svg-canvas');
-                svg.innerHTML = this.generateSVGPaths(this.currentBook, patternIdx, false);
-                
-                // Add click events to color regions
-                svg.querySelectorAll('path, circle, polygon').forEach(elem => {
-                    elem.onclick = (e) => {
-                        e.target.setAttribute('fill', this.isEraser ? '#ffffff' : this.activeColor);
-                    };
-                });
-
+                this.drawPatternOnCanvas(this.canvas, this.currentBook, patternIdx);
                 this.showScreen('screen-atelier');
             }
 
-            generateSVGPaths(book, level, isMini) {
-                const c = isMini ? 50 : 200;
-                const scale = isMini ? 0.25 : 1.0;
-                let paths = '';
+            initCanvasEvents() {
+                let isDrawing = false;
 
-                const petality = 6 + (book * 4) + (level % 5) * 2;
-                const rings = 4 + book + (level % 3);
+                const getPos = (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    return {
+                        x: Math.floor((clientX - rect.left) * scaleX),
+                        y: Math.floor((clientY - rect.top) * scaleY)
+                    };
+                };
 
-                for (let r = rings; r > 0; r--) {
-                    const radius = r * 30 * scale;
-                    for (let i = 0; i < petality; i++) {
-                        const angle = (i * 2 * Math.PI) / petality;
-                        const x = c + radius * Math.cos(angle);
-                        const y = c + radius * Math.sin(angle);
-                        
-                        if ((level + r) % 2 === 0) {
-                            paths += `<circle cx="${x}" cy="${y}" r="${12 * scale}" fill="#ffffff"/>`;
-                        } else {
-                            paths += `<path d="M ${c} ${c} Q ${x} ${y} ${c + Math.cos(angle + 0.3) * radius} ${c + Math.sin(angle + 0.3) * radius}" fill="#ffffff"/>`;
-                        }
+                const handleStart = (e) => {
+                    const pos = getPos(e);
+                    if (this.currentTool === 'fill') {
+                        this.floodFill(pos.x, pos.y, this.hexToRgb(this.activeColor));
+                    } else {
+                        isDrawing = true;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(pos.x, pos.y);
+                    }
+                };
+
+                const handleMove = (e) => {
+                    if (!isDrawing || this.currentTool === 'fill') return;
+                    const pos = getPos(e);
+                    this.ctx.strokeStyle = this.currentTool === 'eraser' ? '#ffffff' : this.activeColor;
+                    this.ctx.lineWidth = this.currentTool === 'eraser' ? 15 : 4;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.lineTo(pos.x, pos.y);
+                    this.ctx.stroke();
+                };
+
+                const handleEnd = () => { isDrawing = false; };
+
+                this.canvas.addEventListener('mousedown', handleStart);
+                this.canvas.addEventListener('mousemove', handleMove);
+                window.addEventListener('mouseup', handleEnd);
+
+                this.canvas.addEventListener('touchstart', handleStart);
+                this.canvas.addEventListener('touchmove', handleMove);
+                window.addEventListener('touchend', handleEnd);
+            }
+
+            floodFill(startX, startY, fillColor) {
+                const imgData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                const data = imgData.data;
+                const targetColor = this.getPixelColor(data, startX, startY);
+
+                if (this.colorsMatch(targetColor, fillColor)) return;
+
+                const pixelsToCheck = [startX, startY];
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+
+                while (pixelsToCheck.length > 0) {
+                    const y = pixelsToCheck.pop();
+                    const x = pixelsToCheck.pop();
+
+                    const currentColor = this.getPixelColor(data, x, y);
+
+                    if (this.colorsMatch(currentColor, targetColor) && !this.isBorder(currentColor)) {
+                        this.setPixelColor(data, x, y, fillColor);
+
+                        if (x > 0) pixelsToCheck.push(x - 1, y);
+                        if (x < width - 1) pixelsToCheck.push(x + 1, y);
+                        if (y > 0) pixelsToCheck.push(x, y - 1);
+                        if (y < height - 1) pixelsToCheck.push(x, y + 1);
                     }
                 }
-                return paths;
+                this.ctx.putImageData(imgData, 0, 0);
+            }
+
+            getPixelColor(data, x, y) {
+                const idx = (y * this.canvas.width + x) * 4;
+                return [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
+            }
+
+            setPixelColor(data, x, y, color) {
+                const idx = (y * this.canvas.width + x) * 4;
+                data[idx] = color.r;
+                data[idx + 1] = color.g;
+                data[idx + 2] = color.b;
+                data[idx + 3] = 255;
+            }
+
+            colorsMatch(a, b) {
+                return Math.abs(a[0] - b.r) < 10 && Math.abs(a[1] - b.g) < 10 && Math.abs(a[2] - b.b) < 10;
+            }
+
+            isBorder(color) {
+                return color[0] < 50 && color[1] < 50 && color[2] < 50;
+            }
+
+            hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : { r: 0, g: 0, b: 0 };
             }
 
             verifyComplete() {
-                const elems = Array.from(document.querySelectorAll('#svg-canvas path, #svg-canvas circle'));
-                const colored = elems.filter(e => e.getAttribute('fill') && e.getAttribute('fill') !== '#ffffff');
-                const ratio = colored.length / elems.length;
-
-                if (ratio >= 0.3) {
-                    this.score += 300;
-                    alert("Awesome Precision! Pattern Completed! +300 PTS ⭐");
-                    if (this.currentPattern < 19) {
-                        this.unlocked[this.currentBook][this.currentPattern + 1] = true;
-                    }
-                    this.openBook(this.currentBook);
-                } else {
-                    this.hearts--;
-                    alert("Needs more color! Heart lost 💔");
-                    if (this.hearts <= 0) {
-                        alert("Game Over! Restoring Hearts...");
-                        this.hearts = 3;
-                        this.showScreen('screen-bookshelf');
-                    } else {
-                        this.updateUI();
-                    }
+                this.score += 200;
+                alert("Drawing Completed! +200 PTS ⭐");
+                if (this.currentPattern < 19) {
+                    this.unlocked[this.currentBook][this.currentPattern + 1] = true;
                 }
+                this.openBook(this.currentBook);
             }
         }
 
