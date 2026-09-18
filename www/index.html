@@ -1,1 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mandala Art Coloring Book</title>
+    <style>
+        * { box-sizing: border-box; touch-action: manipulation; margin: 0; padding: 0; user-select: none; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #f8fafc; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        header { background: #1e293b; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+        .stats { display: flex; gap: 12px; align-items: center; font-weight: bold; font-size: 14px; }
+        .stat-item { background: #334155; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
+        .controls { display: flex; gap: 8px; }
+        button { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px; }
+        button:active { transform: scale(0.95); }
+        button.secondary { background: #475569; }
+        #app-container { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        #canvas-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; padding: 10px; position: relative; }
+        svg { width: 100%; height: 100%; max-width: 500px; max-height: 500px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); }
+        svg path { stroke: #1e293b; stroke-width: 1.5; stroke-linejoin: round; transition: fill 0.1s ease; cursor: pointer; }
+        .palette-container { background: #1e293b; padding: 10px; border-top: 1px solid #334155; display: flex; flex-direction: column; gap: 8px; }
+        .palette-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+        .tab-btn { background: #334155; color: #94a3b8; font-size: 11px; padding: 4px 10px; border-radius: 12px; white-space: nowrap; }
+        .tab-btn.active { background: #3b82f6; color: white; }
+        .color-grid { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; }
+        .color-swatch { min-width: 36px; height: 36px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; flex-shrink: 0; }
+        .color-swatch.active { border-color: #ffffff; transform: scale(1.15); }
+        .tools { display: flex; justify-content: space-between; padding: 0 8px; align-items: center; }
+        .modal { position: absolute; inset: 0; background: rgba(15,23,42,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; z-index: 50; }
+        .hidden { display: none !important; }
+        .book-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; width: 100%; max-width: 400px; }
+        .book-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; text-align: center; }
+        .overlay-scan { position: absolute; inset: 0; border: 2px solid #22c55e; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+        .overlay-scan.active { opacity: 1; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="stats">
+            <div class="stat-item">❤️ <span id="hp-count">3</span></div>
+            <div class="stat-item">⭐ <span id="score-count">0</span> PTS</div>
+        </div>
+        <div class="controls">
+            <button class="secondary" onclick="game.openGallery()">Book Select</button>
+            <button onclick="game.verifyBoundaries()">Verify Precision</button>
+        </div>
+    </header>
+
+    <div id="app-container">
+        <div id="canvas-wrapper">
+            <div id="scan-overlay" class="overlay-scan"></div>
+            <svg id="mandala-svg" viewBox="0 0 400 400"></svg>
+        </div>
+
+        <div class="palette-container">
+            <div class="tools">
+                <div style="display:flex; gap:6px;">
+                    <button class="secondary" onclick="game.undo()">↩️ Undo</button>
+                    <button class="secondary" onclick="game.redo()">↪️ Redo</button>
+                    <button class="secondary" id="eraser-btn" onclick="game.toggleEraser()">🧹 Eraser</button>
+                </div>
+                <span id="level-indicator" style="font-size:12px; color:#94a3b8; font-weight:bold;">Book 1 - Lvl 1</span>
+            </div>
+            <div class="palette-tabs" id="palette-tabs"></div>
+            <div class="color-grid" id="color-grid"></div>
+        </div>
+    </div>
+
+    <div id="gallery-modal" class="modal hidden">
+        <h2>Select Tier Book</h2>
+        <div class="book-grid">
+            <div class="book-card" onclick="game.selectBook(0)">
+                <h3>Beginner</h3>
+                <p>20 Levels</p>
+            </div>
+            <div class="book-card" onclick="game.selectBook(1)">
+                <h3>Intermediate</h3>
+                <p>20 Levels</p>
+            </div>
+            <div class="book-card" onclick="game.selectBook(2)">
+                <h3>Pro Tier</h3>
+                <p>20 Levels</p>
+            </div>
+        </div>
+        <button style="margin-top:20px;" onclick="game.closeGallery()">Resume</button>
+    </div>
+
+    <script>
+        const PALETTES = {
+            Vivid: ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'],
+            Light: ['#fca5a5', '#fdba74', '#fde047', '#6ee7b7', '#67e8f9', '#93c5fd', '#c4b5fd', '#f472b6'],
+            Dark: ['#991b1b', '#9a3412', '#854d0e', '#065f46', '#155e75', '#1e40af', '#5b21b6', '#831843'],
+            Metallic: ['#d4af37', '#c0c0c0', '#b87333', '#e5e4e2', '#a8a9ad', '#d1a054', '#8c7853', '#4682b4'],
+            Neon: ['#ff007f', '#00f3ff', '#00ff66', '#ff00ff', '#ffff00', '#ff3300', '#9900ff', '#00ffff']
+        };
+
+        class MandalaGame {
+            constructor() {
+                this.currentBook = 0;
+                this.currentLevel = 0;
+                this.score = 0;
+                this.hp = 3;
+                this.activeColor = PALETTES.Vivid[0];
+                this.isEraser = false;
+                this.history = [];
+                this.redoStack = [];
+                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                this.initUI();
+                this.loadLevel(0, 0);
+            }
+
+            initUI() {
+                const tabsContainer = document.getElementById('palette-tabs');
+                Object.keys(PALETTES).forEach((cat, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
+                    btn.innerText = cat;
+                    btn.onclick = () => this.switchPaletteCategory(cat, btn);
+                    tabsContainer.appendChild(btn);
+                });
+                this.renderColors(PALETTES.Vivid);
+            }
+
+            switchPaletteCategory(cat, btn) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.renderColors(PALETTES[cat]);
+            }
+
+            renderColors(colors) {
+                const grid = document.getElementById('color-grid');
+                grid.innerHTML = '';
+                colors.forEach(color => {
+                    const swatch = document.createElement('div');
+                    swatch.className = `color-swatch ${this.activeColor === color && !this.isEraser ? 'active' : ''}`;
+                    swatch.style.background = color;
+                    swatch.onclick = () => {
+                        this.activeColor = color;
+                        this.isEraser = false;
+                        document.getElementById('eraser-btn').style.background = '#475569';
+                        document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+                        swatch.classList.add('active');
+                    };
+                    grid.appendChild(swatch);
+                });
+            }
+
+            toggleEraser() {
+                this.isEraser = !this.isEraser;
+                document.getElementById('eraser-btn').style.background = this.isEraser ? '#ef4444' : '#475569';
+                if (this.isEraser) {
+                    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+                }
+            }
+
+            playSound(freq, duration) {
+                try {
+                    const osc = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+                    osc.frequency.value = freq;
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, this.audioCtx.currentTime + duration);
+                    osc.stop(this.audioCtx.currentTime + duration);
+                } catch(e) {}
+            }
+
+            generateMandalaSVG(level) {
+                const svg = document.getElementById('mandala-svg');
+                svg.innerHTML = '';
+                const center = 200;
+                const petality = 8 + (level % 6) * 2;
+                
+                for (let ring = 5; ring > 0; ring--) {
+                    const radius = ring * 35;
+                    for (let i = 0; i < petality; i++) {
+                        const angle = (i * 360 / petality) * Math.PI / 180;
+                        const nextAngle = ((i + 1) * 360 / petality) * Math.PI / 180;
+                        const cx = center + Math.cos(angle) * radius;
+                        const cy = center + Math.sin(angle) * radius;
+                        
+                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        const d = `M ${center} ${center} Q ${cx} ${cy} ${center + Math.cos(nextAngle) * radius} ${center + Math.sin(nextAngle) * radius} Z`;
+                        path.setAttribute('d', d);
+                        path.setAttribute('fill', '#ffffff');
+                        path.onclick = (e) => this.colorRegion(e.target);
+                        svg.appendChild(path);
+                    }
+                }
+            }
+
+            colorRegion(target) {
+                const prevColor = target.getAttribute('fill');
+                const nextColor = this.isEraser ? '#ffffff' : this.activeColor;
+                if (prevColor === nextColor) return;
+
+                this.history.push({ target, prevColor });
+                this.redoStack = [];
+                target.setAttribute('fill', nextColor);
+                this.playSound(440, 0.1);
+                this.checkCompletion();
+            }
+
+            undo() {
+                if (this.history.length === 0) return;
+                const last = this.history.pop();
+                this.redoStack.push({ target: last.target, prevColor: last.target.getAttribute('fill') });
+                last.target.setAttribute('fill', last.prevColor);
+                this.playSound(300, 0.08);
+            }
+
+            redo() {
+                if (this.redoStack.length === 0) return;
+                const next = this.redoStack.pop();
+                this.history.push({ target: next.target, prevColor: next.target.getAttribute('fill') });
+                next.target.setAttribute('fill', next.prevColor);
+                this.playSound(500, 0.08);
+            }
+
+            checkCompletion() {
+                const paths = Array.from(document.querySelectorAll('#mandala-svg path'));
+                const uncolored = paths.filter(p => p.getAttribute('fill') === '#ffffff');
+                if (uncolored.length === 0 && paths.length > 0) {
+                    this.score += 100;
+                    document.getElementById('score-count').innerText = this.score;
+                    this.playSound(880, 0.3);
+                    setTimeout(() => {
+                        alert('Level Completed!');
+                        this.nextLevel();
+                    }, 200);
+                }
+            }
+
+            verifyBoundaries() {
+                const overlay = document.getElementById('scan-overlay');
+                overlay.classList.add('active');
+                this.playSound(600, 0.15);
+                setTimeout(() => overlay.classList.remove('active'), 800);
+            }
+
+            loadLevel(bookIndex, levelIndex) {
+                this.currentBook = bookIndex;
+                this.currentLevel = levelIndex;
+                this.history = [];
+                this.redoStack = [];
+                document.getElementById('level-indicator').innerText = `Book ${bookIndex + 1} - Lvl ${levelIndex + 1}`;
+                this.generateMandalaSVG(levelIndex);
+            }
+
+            nextLevel() {
+                if (this.currentLevel < 19) {
+                    this.loadLevel(this.currentBook, this.currentLevel + 1);
+                } else if (this.currentBook < 2) {
+                    this.loadLevel(this.currentBook + 1, 0);
+                } else {
+                    alert('Congratulations! You completed all books!');
+                }
+            }
+
+            openGallery() { document.getElementById('gallery-modal').classList.remove('hidden'); }
+            closeGallery() { document.getElementById('gallery-modal').classList.add('hidden'); }
+            selectBook(index) {
+                this.loadLevel(index, 0);
+                this.closeGallery();
+            }
+        }
+
+        const game = new MandalaGame();
+    </script>
+</body>
+</html>
 
